@@ -52,11 +52,11 @@
 - [x] T008 [P] Contract test for GCP mock service responses in tests/contract/test-gcp-mocks.spec.ts
 
 ## Phase 3.3: Page Object Models (ONLY after contracts pass)
-- [ ] T009 [P] Base page object class in tests/pages/base-page.ts
-- [ ] T010 [P] File browser page object in tests/pages/file-browser-page.ts
-- [ ] T011 [P] Version history page object in tests/pages/version-history-page.ts
-- [ ] T012 [P] Login page object in tests/pages/login-page.ts
-- [ ] T013 [P] Upload progress modal page object in tests/pages/upload-progress-modal.ts
+- [x] T009 [P] Base page object class in tests/pages/base-page.ts
+- [x] T010 [P] File browser page object in tests/pages/file-browser-page.ts
+- [x] T011 [P] Version history page object in tests/pages/version-history-page.ts
+- [x] T012 [P] Login page object in tests/pages/login-page.ts
+- [x] T013 [P] Upload progress modal page object in tests/pages/upload-progress-modal.ts
 
 ## Phase 3.4: Test Utilities & Mock Services
 - [ ] T014 [P] Test data helper utilities in tests/utils/test-data-helpers.ts
