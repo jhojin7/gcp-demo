@@ -1,7 +1,9 @@
 import os
 import logging
 from typing import Optional
+from dotenv import load_dotenv
 
+load_dotenv()
 
 class Config:
     """
@@ -26,6 +28,10 @@ class Config:
         'UPLOAD_ALLOWED_EXTENSIONS',
         'txt,pdf,png,jpg,jpeg,gif,doc,docx,xls,xlsx,ppt,pptx,zip,tar,gz'
     ).split(',')
+    UPLOAD_ALLOWED_MIMETYPES = os.environ.get(
+        'UPLOAD_ALLOWED_MIMETYPES',
+        'text/plain,application/pdf,image/png,image/jpeg,image/gif,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip,application/x-tar,application/gzip'
+    ).split(',')
 
     # Security Configuration
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', '/tmp/uploads')
@@ -33,6 +39,7 @@ class Config:
 
     # Logging Configuration
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+    LOG_FORMATTER = os.environ.get('LOG_FORMATTER', 'default')  # default or json
     LOG_FORMAT = os.environ.get(
         'LOG_FORMAT',
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -71,10 +78,20 @@ class Config:
     @classmethod
     def setup_logging(cls):
         """Configure application logging."""
-        logging.basicConfig(
-            level=getattr(logging, cls.LOG_LEVEL),
-            format=cls.LOG_FORMAT
-        )
+        if cls.LOG_FORMATTER == 'json':
+            from logging_formatters import JsonFormatter
+            formatter = JsonFormatter()
+            handler = logging.StreamHandler()
+            handler.setFormatter(formatter)
+            logging.basicConfig(
+                level=getattr(logging, cls.LOG_LEVEL),
+                handlers=[handler]
+            )
+        else:
+            logging.basicConfig(
+                level=getattr(logging, cls.LOG_LEVEL),
+                format=cls.LOG_FORMAT
+            )
 
         # Set specific logger levels
         if cls.DEBUG:
@@ -103,21 +120,31 @@ class Config:
         }
 
     @classmethod
-    def is_file_allowed(cls, filename: str) -> bool:
+    def is_file_allowed(cls, filename: str, content_type: str = None) -> bool:
         """
-        Check if file extension is allowed for upload.
+        Check if file extension and MIME type are allowed for upload.
 
         Args:
             filename: Name of file to check
+            content_type: Detected MIME type of file content
 
         Returns:
-            True if file extension is allowed
+            True if file is allowed
         """
         if not filename or '.' not in filename:
             return False
 
+        # Check extension
         extension = filename.rsplit('.', 1)[1].lower()
-        return extension in [ext.strip().lower() for ext in cls.UPLOAD_ALLOWED_EXTENSIONS]
+        if extension not in [ext.strip().lower() for ext in cls.UPLOAD_ALLOWED_EXTENSIONS]:
+            return False
+
+        # Check MIME type if provided
+        if content_type:
+            if content_type.lower() not in [mime.strip().lower() for mime in cls.UPLOAD_ALLOWED_MIMETYPES]:
+                return False
+
+        return True
 
     @classmethod
     def get_upload_config(cls) -> dict:

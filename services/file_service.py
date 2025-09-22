@@ -3,6 +3,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 import os
 import uuid
+import magic
 
 from models.file import File
 from models.file_version import FileVersion
@@ -10,6 +11,7 @@ from models.user import User
 from models.folder import Folder
 from models.operation import Operation
 from gcp_storage import GCPStorageService
+from config import Config
 
 
 class FileService:
@@ -29,7 +31,7 @@ class FileService:
         self.logger = logging.getLogger(__name__)
 
     def upload_file(self, file_content: bytes, filename: str, virtual_path: str,
-                   user: User, content_type: str = None) -> Tuple[File, FileVersion, Operation]:
+                   user: User, content_type: str = None, ip_address: str = None) -> Tuple[File, FileVersion, Operation]:
         """
         Upload a new file or create new version of existing file.
 
@@ -39,6 +41,7 @@ class FileService:
             virtual_path: Target folder path
             user: User performing the upload
             content_type: MIME type (auto-detected if None)
+            ip_address: Source IP address
 
         Returns:
             Tuple of (File, FileVersion, Operation)
@@ -48,6 +51,9 @@ class FileService:
             RuntimeError: For upload failures
         """
         try:
+            # Validate file content
+            self._validate_file_content(file_content, filename)
+
             # Auto-detect content type if not provided
             if content_type is None:
                 content_type = self._detect_content_type(filename)
@@ -90,7 +96,8 @@ class FileService:
             operation = Operation.create_upload_operation(
                 user_id=user.user_id,
                 file_storage_key=storage_key,
-                version_id=file_version.version_id
+                version_id=file_version.version_id,
+                ip_address=ip_address
             )
 
             self.logger.info(f"File upload successful: {filename} -> {storage_key}")
@@ -100,7 +107,16 @@ class FileService:
             self.logger.error(f"File upload failed: {e}")
             raise
 
-    def download_file(self, file_id: str, user: User, version_id: str = None) -> Tuple[bytes, str, Operation]:
+    def _validate_file_content(self, file_content: bytes, filename: str):
+        """Validate file content against allowed MIME types."""
+        if not file_content:
+            raise ValueError("Empty file cannot be uploaded")
+
+        detected_mime_type = magic.from_buffer(file_content, mime=True)
+        if not Config.is_file_allowed(filename, detected_mime_type):
+            raise ValueError(f"File type not allowed. Detected MIME type: {detected_mime_type}")
+
+    def download_file(self, file_id: str, user: User, version_id: str = None, ip_address: str = None) -> Tuple[bytes, str, Operation]:
         """
         Download file content.
 
@@ -108,6 +124,7 @@ class FileService:
             file_id: File storage key or display name
             user: User requesting download
             version_id: Specific version (None for current)
+            ip_address: Source IP address
 
         Returns:
             Tuple of (content, filename, operation)
@@ -149,7 +166,8 @@ class FileService:
             operation = Operation.create_download_operation(
                 user_id=user.user_id,
                 file_storage_key=file_obj.storage_key,
-                version_id=version_id
+                version_id=version_id,
+                ip_address=ip_address
             )
 
             self.logger.info(f"File download successful: {file_obj.storage_key}")
@@ -159,13 +177,14 @@ class FileService:
             self.logger.error(f"File download failed: {e}")
             raise
 
-    def delete_file(self, file_id: str, user: User) -> Operation:
+    def delete_file(self, file_id: str, user: User, ip_address: str = None) -> Operation:
         """
         Soft delete a file (preserves version history).
 
         Args:
             file_id: File storage key or display name
             user: User performing deletion
+            ip_address: Source IP address
 
         Returns:
             Operation: Deletion operation record
@@ -198,7 +217,8 @@ class FileService:
             # Create operation record
             operation = Operation.create_delete_operation(
                 user_id=user.user_id,
-                file_storage_key=file_obj.storage_key
+                file_storage_key=file_obj.storage_key,
+                ip_address=ip_address
             )
 
             self.logger.info(f"File deletion successful: {file_obj.storage_key}")
@@ -208,7 +228,7 @@ class FileService:
             self.logger.error(f"File deletion failed: {e}")
             raise
 
-    def restore_file_version(self, file_id: str, version_id: str, user: User) -> Tuple[File, FileVersion, Operation]:
+    def restore_file_version(self, file_id: str, version_id: str, user: User, ip_address: str = None) -> Tuple[File, FileVersion, Operation]:
         """
         Restore a file to a previous version.
 
@@ -216,6 +236,7 @@ class FileService:
             file_id: File storage key or display name
             version_id: Version to restore
             user: User performing restoration
+            ip_address: Source IP address
 
         Returns:
             Tuple of (File, new FileVersion, Operation)
@@ -258,7 +279,8 @@ class FileService:
             operation = Operation.create_restore_operation(
                 user_id=user.user_id,
                 file_storage_key=file_obj.storage_key,
-                version_id=version_id
+                version_id=version_id,
+                ip_address=ip_address
             )
 
             self.logger.info(f"File restoration successful: {file_obj.storage_key} from version {version_id}")
@@ -291,23 +313,18 @@ class FileService:
             prefix = self._build_storage_prefix(user.user_id, virtual_path)
 
             # Get files from GCP
-            files = self.gcp_service.list_files(
+            files, _ = self.gcp_service.list_files(
                 prefix=prefix,
                 owner_id=user.user_id,
-                include_deleted=include_deleted
+                include_deleted=include_deleted,
+                delimiter='/'
             )
 
-            # Filter to exact folder match (not subfolders)
-            filtered_files = []
-            for file_obj in files:
-                if file_obj.virtual_path == virtual_path:
-                    filtered_files.append(file_obj)
-
             # Sort by display name
-            filtered_files.sort(key=lambda f: f.display_name.lower())
+            files.sort(key=lambda f: f.display_name.lower())
 
-            self.logger.info(f"Listed {len(filtered_files)} files in {virtual_path}")
-            return filtered_files
+            self.logger.info(f"Listed {len(files)} files in {virtual_path}")
+            return files
 
         except Exception as e:
             self.logger.error(f"File listing failed: {e}")
@@ -334,32 +351,28 @@ class FileService:
             # Build prefix for GCP listing
             prefix = self._build_storage_prefix(user.user_id, virtual_path)
 
-            # Get all files with this prefix
-            all_files = self.gcp_service.list_files(
+            # Get prefixes from GCP
+            _, prefixes = self.gcp_service.list_files(
                 prefix=prefix,
                 owner_id=user.user_id,
-                include_deleted=False
+                include_deleted=False,
+                delimiter='/'
             )
 
-            # Extract unique subfolder paths
-            subfolder_paths = set()
-            for file_obj in all_files:
-                file_path = file_obj.virtual_path
-                if file_path.startswith(virtual_path) and file_path != virtual_path:
-                    # Find first subfolder
-                    relative_path = file_path[len(virtual_path):]
-                    if '/' in relative_path:
-                        subfolder = relative_path.split('/')[0]
-                        subfolder_paths.add(virtual_path + subfolder + '/')
-
-            # Create Folder objects
+            # Create Folder objects from prefixes
             folders = []
-            for folder_path in sorted(subfolder_paths):
-                folder = Folder(
-                    virtual_path=folder_path,
-                    owner_id=user.user_id
-                )
-                folders.append(folder)
+            if prefixes:
+                for folder_path in sorted(prefixes):
+                    # The prefix from GCS includes the user_id, so we need to construct the virtual path
+                    # e.g., user1/files/docs/ -> /docs/
+                    parts = folder_path.split('/')
+                    if len(parts) > 2 and parts[1] == 'files':
+                        pure_virtual_path = '/' + '/'.join(parts[2:])
+                        folder = Folder(
+                            virtual_path=pure_virtual_path,
+                            owner_id=user.user_id
+                        )
+                        folders.append(folder)
 
             self.logger.info(f"Found {len(folders)} subfolders in {virtual_path}")
             return folders
@@ -449,23 +462,31 @@ class FileService:
         return file_obj.owner_id == user.user_id
 
     def _normalize_virtual_path(self, virtual_path: str) -> str:
-        """Normalize virtual path format."""
+        """Normalize virtual path format and prevent traversal."""
         if not virtual_path:
             return '/'
 
-        # Ensure starts with /
+        # Prepend slash if missing
         if not virtual_path.startswith('/'):
             virtual_path = '/' + virtual_path
 
-        # Ensure ends with /
-        if not virtual_path.endswith('/'):
-            virtual_path += '/'
+        # Resolve path components
+        parts = []
+        for part in virtual_path.split('/'):
+            if part == '..':
+                if parts:
+                    parts.pop()
+            elif part != '.' and part != '':
+                parts.append(part)
 
-        # Remove double slashes
-        while '//' in virtual_path:
-            virtual_path = virtual_path.replace('//', '/')
+        # Reconstruct path
+        normalized_path = '/' + '/'.join(parts)
+        if not normalized_path.endswith('/') and parts:
+            normalized_path += '/'
+        elif not parts:
+            return '/'
 
-        return virtual_path
+        return normalized_path
 
     def _generate_storage_key(self, user_id: str, virtual_path: str, filename: str) -> str:
         """Generate unique storage key for file."""

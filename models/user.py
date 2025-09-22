@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -16,7 +16,7 @@ class User:
     def __post_init__(self):
         """Validate user data after initialization."""
         if self.created_at is None:
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(timezone.utc)
 
         self.validate()
 
@@ -71,5 +71,5 @@ class User:
         return {
             'user_id': self.user_id,
             'display_name': self.display_name,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }

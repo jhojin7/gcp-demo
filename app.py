@@ -93,6 +93,7 @@ def create_app(config_name=None):
     @app.errorhandler(RequestEntityTooLarge)
     def file_too_large(error):
         max_size = app.config['MAX_CONTENT_LENGTH'] // (1024 * 1024)
+        logger.warning(f"File upload rejected: file exceeds maximum size of {max_size}MB")
         return render_template('error.html',
                              error_code=413,
                              error_message=f"File too large. Maximum size: {max_size}MB"), 413
@@ -102,6 +103,28 @@ def create_app(config_name=None):
         return render_template('error.html',
                              error_code=403,
                              error_message="Access denied"), 403
+
+    @app.before_request
+    def log_request_info():
+        """Log incoming request information."""
+        logger.info(
+            f"Request: {request.method} {request.path} from {request.remote_addr} "
+            f"User-Agent: {request.user_agent.string} "
+            f"Content-Length: {request.content_length or 0}"
+        )
+
+    @app.after_request
+    def after_request_handler(response):
+        """Add security headers and log response information."""
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+
+        # Log response info
+        logger.info(
+            f"Response: {response.status_code} "
+            f"Content-Length: {response.content_length or 0}"
+        )
+        return response
 
     # Main routes
     @app.route('/')
@@ -179,8 +202,8 @@ def create_app(config_name=None):
                 target_folder += '/'
 
             # Validate file
-            if not config.is_file_allowed(file.filename):
-                flash(f'File type not allowed. Allowed types: {", ".join(config.UPLOAD_ALLOWED_EXTENSIONS)}', 'error')
+            if not config.is_file_allowed(file.filename, file.content_type):
+                flash(f'File type not allowed. Allowed extensions: {", ".join(config.UPLOAD_ALLOWED_EXTENSIONS)} or allowed MIME types: {", ".join(config.UPLOAD_ALLOWED_MIMETYPES)}', 'error')
                 return redirect(request.referrer or url_for('file_browser'))
 
             # Secure filename
@@ -201,7 +224,8 @@ def create_app(config_name=None):
                 filename=filename,
                 virtual_path=target_folder,
                 user=user,
-                content_type=file.content_type
+                content_type=file.content_type,
+                ip_address=request.remote_addr
             )
 
             # Log operation
@@ -227,7 +251,8 @@ def create_app(config_name=None):
             # Download file
             content, filename, operation = file_service.download_file(
                 file_id=file_id,
-                user=user
+                user=user,
+                ip_address=request.remote_addr
             )
 
             # Log operation
@@ -266,7 +291,8 @@ def create_app(config_name=None):
             content, filename, operation = file_service.download_file(
                 file_id=file_id,
                 user=user,
-                version_id=version_id
+                version_id=version_id,
+                ip_address=request.remote_addr
             )
 
             # Log operation
@@ -302,7 +328,7 @@ def create_app(config_name=None):
             user = get_current_user()
 
             # Delete file
-            operation = file_service.delete_file(file_id, user)
+            operation = file_service.delete_file(file_id, user, ip_address=request.remote_addr)
 
             # Log operation
             log_operation(operation)
@@ -364,7 +390,8 @@ def create_app(config_name=None):
             file_obj, new_version, operation = file_service.restore_file_version(
                 file_id=file_id,
                 version_id=version_id,
-                user=user
+                user=user,
+                ip_address=request.remote_addr
             )
 
             # Log operation

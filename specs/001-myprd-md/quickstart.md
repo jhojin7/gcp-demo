@@ -10,7 +10,8 @@
 
 ### 1. Install Dependencies
 ```bash
-pip install flask google-cloud-storage python-dateutil
+pip install -r requirements.txt
+pip install python-dotenv
 ```
 
 ### 2. Configure Environment

@@ -1,7 +1,7 @@
 import os
 import logging
 from typing import List, Optional, Dict, Any, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from google.cloud import storage
 from google.cloud.exceptions import NotFound, Forbidden, BadRequest
 from google.auth.exceptions import DefaultCredentialsError
@@ -113,7 +113,7 @@ class GCPStorageService:
             version_metadata = {
                 'created_by': user_id,
                 'operation_type': operation_type,
-                'created_at_iso': datetime.utcnow().isoformat()
+                'created_at_iso': datetime.now(timezone.utc).isoformat()
             }
 
             if restore_source_version:
@@ -138,7 +138,7 @@ class GCPStorageService:
                 version_id=str(blob.generation),
                 file_storage_key=file.storage_key,
                 size_bytes=len(file_content),
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(timezone.utc),
                 created_by=user_id,
                 operation_type=operation_type,
                 is_current=True,
@@ -231,7 +231,7 @@ class GCPStorageService:
 
             # Mark as deleted
             current_metadata['is_deleted'] = 'true'
-            current_metadata['deleted_at'] = datetime.utcnow().isoformat()
+            current_metadata['deleted_at'] = datetime.now(timezone.utc).isoformat()
 
             # Update metadata
             blob.metadata = current_metadata
@@ -246,7 +246,7 @@ class GCPStorageService:
             self.logger.error(f"Delete failed for {storage_key}: {e}")
             raise RuntimeError(f"File deletion failed: {e}")
 
-    def list_files(self, prefix: str = "", owner_id: str = None, include_deleted: bool = False) -> List[File]:
+    def list_files(self, prefix: str = "", owner_id: str = None, include_deleted: bool = False, delimiter: str = None) -> Tuple[List[File], set]:
         """
         List files in bucket with optional filtering.
 
@@ -254,16 +254,17 @@ class GCPStorageService:
             prefix: Path prefix to filter by
             owner_id: Filter by file owner
             include_deleted: Include soft-deleted files
+            delimiter: Delimiter for folder-like listing
 
         Returns:
-            List of File objects
+            Tuple of (List of File objects, set of prefixes)
 
         Raises:
             RuntimeError: For GCP operation failures
         """
         try:
             # List blobs with prefix
-            blobs = self._client.list_blobs(self._bucket, prefix=prefix)
+            blobs = self._client.list_blobs(self._bucket, prefix=prefix, delimiter=delimiter)
 
             files = []
             for blob in blobs:
@@ -294,7 +295,7 @@ class GCPStorageService:
                 files.append(file)
 
             self.logger.info(f"Listed {len(files)} files with prefix '{prefix}'")
-            return files
+            return files, blobs.prefixes
 
         except Exception as e:
             self.logger.error(f"List files failed: {e}")
@@ -344,7 +345,7 @@ class GCPStorageService:
                     version_id=str(blob.generation),
                     file_storage_key=blob.name,
                     size_bytes=blob.size or 0,
-                    created_at=blob.time_created.replace(tzinfo=None) if blob.time_created else datetime.utcnow(),
+                    created_at=blob.time_created.replace(tzinfo=None) if blob.time_created else datetime.now(timezone.utc),
                     created_by=metadata.get('created_by', 'unknown'),
                     operation_type=metadata.get('operation_type', 'upload'),
                     is_current=blob.generation == current_generation,

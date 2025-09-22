@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 
 
@@ -52,8 +52,8 @@ class FileVersion:
 
     def get_relative_time(self) -> str:
         """Get human-readable relative timestamp."""
-        now = datetime.utcnow()
-        diff = now - self.created_at
+        now = datetime.now(timezone.utc)
+        diff = now - self.created_at.replace(tzinfo=timezone.utc)
 
         # Handle future dates (shouldn't happen, but be safe)
         if diff.total_seconds() < 0:

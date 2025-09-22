@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import re
 
 
@@ -21,7 +21,7 @@ class File:
     def __post_init__(self):
         """Validate file data after initialization."""
         if self.created_at is None:
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(timezone.utc)
 
         self.validate()
 

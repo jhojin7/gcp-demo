@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 
@@ -78,7 +78,7 @@ class Operation:
     def get_duration_ms(self, end_time: datetime = None) -> int:
         """Calculate operation duration in milliseconds."""
         if end_time is None:
-            end_time = datetime.utcnow()
+            end_time = datetime.now(timezone.utc)
 
         delta = end_time - self.timestamp
         return int(delta.total_seconds() * 1000)
@@ -130,7 +130,7 @@ class Operation:
         return cls(
             operation_type='upload',
             user_id=user_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             file_storage_key=file_storage_key,
             version_id=version_id,
             ip_address=ip_address
@@ -142,7 +142,7 @@ class Operation:
         return cls(
             operation_type='download',
             user_id=user_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             file_storage_key=file_storage_key,
             version_id=version_id,
             ip_address=ip_address
@@ -154,7 +154,7 @@ class Operation:
         return cls(
             operation_type='delete',
             user_id=user_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             file_storage_key=file_storage_key,
             ip_address=ip_address
         )
@@ -165,7 +165,7 @@ class Operation:
         return cls(
             operation_type='restore',
             user_id=user_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             file_storage_key=file_storage_key,
             version_id=version_id,
             ip_address=ip_address
@@ -177,7 +177,7 @@ class Operation:
         return cls(
             operation_type='view',
             user_id=user_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             file_storage_key=file_storage_key,
             ip_address=ip_address
         )
@@ -188,7 +188,7 @@ class Operation:
         return cls(
             operation_type='list',
             user_id=user_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             ip_address=ip_address
         )
 
