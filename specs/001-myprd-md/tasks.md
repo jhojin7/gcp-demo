@@ -42,38 +42,38 @@
 - Based on PRD structure decision: Flask single-project layout
 
 ## Phase 3.1: Setup
-- [ ] T001 Create Flask project structure with templates/, static/, and service modules
-- [ ] T002 Initialize Python project with Flask, google-cloud-storage, python-dateutil dependencies in requirements.txt
-- [ ] T003 [P] Configure pytest setup in tests/ directory with conftest.py
+- [x] T001 Create Flask project structure with templates/, static/, and service modules
+- [x] T002 Initialize Python project with Flask, google-cloud-storage, python-dateutil dependencies in requirements.txt
+- [x] T003 [P] Configure pytest setup in tests/ directory with conftest.py
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests
-- [ ] T004 [P] Contract test GET / (file browser) in tests/contract/test_file_browser.py
-- [ ] T005 [P] Contract test POST /upload in tests/contract/test_upload.py
-- [ ] T006 [P] Contract test GET /download/{file_id} in tests/contract/test_download.py
-- [ ] T007 [P] Contract test GET /download/{file_id}/{version_id} in tests/contract/test_download_version.py
-- [ ] T008 [P] Contract test POST /delete/{file_id} in tests/contract/test_delete.py
-- [ ] T009 [P] Contract test GET /versions/{file_id} in tests/contract/test_versions.py
-- [ ] T010 [P] Contract test POST /restore/{file_id}/{version_id} in tests/contract/test_restore.py
-- [ ] T011 [P] Contract test GET /api/files in tests/contract/test_api_files.py
-- [ ] T012 [P] Contract test GET /api/versions/{file_id} in tests/contract/test_api_versions.py
-- [ ] T013 [P] Contract test GET /api/file/{file_id}/info in tests/contract/test_api_file_info.py
+- [x] T004 [P] Contract test GET / (file browser) in tests/contract/test_file_browser.py
+- [x] T005 [P] Contract test POST /upload in tests/contract/test_upload.py
+- [x] T006 [P] Contract test GET /download/{file_id} in tests/contract/test_download.py
+- [x] T007 [P] Contract test GET /download/{file_id}/{version_id} in tests/contract/test_download_version.py
+- [x] T008 [P] Contract test POST /delete/{file_id} in tests/contract/test_delete.py
+- [x] T009 [P] Contract test GET /versions/{file_id} in tests/contract/test_versions.py
+- [x] T010 [P] Contract test POST /restore/{file_id}/{version_id} in tests/contract/test_restore.py
+- [x] T011 [P] Contract test GET /api/files in tests/contract/test_api_files.py
+- [x] T012 [P] Contract test GET /api/versions/{file_id} in tests/contract/test_api_versions.py
+- [x] T013 [P] Contract test GET /api/file/{file_id}/info in tests/contract/test_api_file_info.py
 
 ### Integration Tests (Test Scenarios from Quickstart)
-- [ ] T014 [P] Integration test file upload and versioning in tests/integration/test_upload_versioning.py
-- [ ] T015 [P] Integration test version history and restoration in tests/integration/test_version_history.py
-- [ ] T016 [P] Integration test file download operations in tests/integration/test_download_operations.py
-- [ ] T017 [P] Integration test file deletion and recovery in tests/integration/test_deletion_recovery.py
-- [ ] T018 [P] Integration test folder navigation in tests/integration/test_folder_navigation.py
-- [ ] T019 [P] Integration test error handling in tests/integration/test_error_handling.py
+- [x] T014 [P] Integration test file upload and versioning in tests/integration/test_upload_versioning.py
+- [x] T015 [P] Integration test version history and restoration in tests/integration/test_version_history.py
+- [x] T016 [P] Integration test file download operations in tests/integration/test_download_operations.py
+- [x] T017 [P] Integration test file deletion and recovery in tests/integration/test_deletion_recovery.py
+- [x] T018 [P] Integration test folder navigation in tests/integration/test_folder_navigation.py
+- [x] T019 [P] Integration test error handling in tests/integration/test_error_handling.py
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Data Models and GCP Service Layer
-- [ ] T020 [P] File model class in models/file.py with validation and state transitions
-- [ ] T021 [P] FileVersion model class in models/file_version.py with metadata handling
+- [x] T020 [P] File model class in models/file.py with validation and state transitions
+- [x] T021 [P] FileVersion model class in models/file_version.py with metadata handling
 - [ ] T022 [P] User model class in models/user.py with ownership context
 - [ ] T023 [P] Folder model class in models/folder.py with virtual path logic
 - [ ] T024 [P] Operation model class in models/operation.py with audit tracking

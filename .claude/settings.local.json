@@ -3,7 +3,9 @@
     "allow": [
       "Bash(.specify/scripts/bash/setup-plan.sh:*)",
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
-      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)"
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(python -m pytest tests/contract/test_file_browser.py -v)",
+      "Bash(python3 -m pytest tests/contract/test_file_browser.py -v)"
     ],
     "deny": [],
     "ask": []
