@@ -1,0 +1,13 @@
+{
+  "typescript.preferences.quoteStyle": "single",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.associations": {
+    "*.spec.ts": "typescript"
+  },
+  "playwright.reuseBrowser": true,
+  "playwright.showTrace": true
+}

@@ -1,0 +1,40 @@
+{
+  "name": "gcp-demo-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for GCP Cloud Storage File Manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=\"Mobile Chrome\"",
+    "test:report": "playwright show-report",
+    "lint": "eslint tests/ --ext .ts",
+    "lint:fix": "eslint tests/ --ext .ts --fix",
+    "format": "prettier --write tests/**/*.ts",
+    "format:check": "prettier --check tests/**/*.ts"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "typescript",
+    "gcp",
+    "file-manager"
+  ],
+  "author": "Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "prettier": "^3.0.0"
+  }
+}

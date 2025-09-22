@@ -1,0 +1,27 @@
+{
+  "fileUpload": {
+    "success": {
+      "status": "success",
+      "fileId": "test-file-123",
+      "message": "File uploaded successfully"
+    },
+    "error": {
+      "status": "error",
+      "code": "UPLOAD_FAILED",
+      "message": "Failed to upload file"
+    }
+  },
+  "fileList": {
+    "success": {
+      "files": [
+        {
+          "id": "file-1",
+          "name": "document.pdf",
+          "size": 1024,
+          "lastModified": "2023-01-01T10:00:00Z",
+          "versions": 1
+        }
+      ]
+    }
+  }
+}

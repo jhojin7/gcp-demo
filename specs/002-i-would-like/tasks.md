@@ -39,17 +39,17 @@
 - Mock data in `tests/fixtures/`
 
 ## Phase 3.1: Setup
-- [ ] T001 Create Playwright test project structure in tests/ directory
-- [ ] T002 Initialize Node.js project with TypeScript and Playwright dependencies
-- [ ] T003 [P] Configure ESLint and Prettier for TypeScript test code
-- [ ] T004 [P] Set up VS Code workspace configuration for Playwright debugging
+- [x] T001 Create Playwright test project structure in tests/ directory
+- [x] T002 Initialize Node.js project with TypeScript and Playwright dependencies
+- [x] T003 [P] Configure ESLint and Prettier for TypeScript test code
+- [x] T004 [P] Set up VS Code workspace configuration for Playwright debugging
 
 ## Phase 3.2: Configuration & Contracts (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These configuration and contract tests MUST be written and validated before ANY page object implementation**
-- [ ] T005 [P] Contract test for Playwright configuration in tests/contract/test-playwright-config.spec.ts
-- [ ] T006 [P] Contract test for browser launch configurations in tests/contract/test-browser-setup.spec.ts
-- [ ] T007 [P] Contract test for test data fixtures in tests/contract/test-fixtures.spec.ts
-- [ ] T008 [P] Contract test for GCP mock service responses in tests/contract/test-gcp-mocks.spec.ts
+- [x] T005 [P] Contract test for Playwright configuration in tests/contract/test-playwright-config.spec.ts
+- [x] T006 [P] Contract test for browser launch configurations in tests/contract/test-browser-setup.spec.ts
+- [x] T007 [P] Contract test for test data fixtures in tests/contract/test-fixtures.spec.ts
+- [x] T008 [P] Contract test for GCP mock service responses in tests/contract/test-gcp-mocks.spec.ts
 
 ## Phase 3.3: Page Object Models (ONLY after contracts pass)
 - [ ] T009 [P] Base page object class in tests/pages/base-page.ts

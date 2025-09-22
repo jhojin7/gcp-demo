@@ -6,7 +6,9 @@
       "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
       "Bash(python -m pytest tests/contract/test_file_browser.py -v)",
       "Bash(python3 -m pytest tests/contract/test_file_browser.py -v)",
-      "Bash(.specify/scripts/bash/create-new-feature.sh:*)"
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(npm install)",
+      "Bash(npx playwright:*)"
     ],
     "deny": [],
     "ask": []
