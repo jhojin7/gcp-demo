@@ -5,7 +5,8 @@
       "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
       "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
       "Bash(python -m pytest tests/contract/test_file_browser.py -v)",
-      "Bash(python3 -m pytest tests/contract/test_file_browser.py -v)"
+      "Bash(python3 -m pytest tests/contract/test_file_browser.py -v)",
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)"
     ],
     "deny": [],
     "ask": []

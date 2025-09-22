@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2025-09-22
 
 ## Active Technologies
 - Python 3.11+ + Flask, Google Cloud Storage Python client, datetime utilities (001-myprd-md)
+- TypeScript 5.x with Node.js 18+ + Playwright, @playwright/test framework, TypeScrip (002-i-would-like)
+- Test fixtures and mock data for GCP interactions (002-i-would-like)
 
 ## Project Structure
 ```
@@ -19,6 +21,7 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.11+: Follow standard conventions
 
 ## Recent Changes
+- 002-i-would-like: Added TypeScript 5.x with Node.js 18+ + Playwright, @playwright/test framework, TypeScrip
 - 001-myprd-md: **MAJOR MILESTONE** - Completed core implementation of GCP Cloud Storage Versioned File Manager
   - ✅ **Backend Complete**: All data models (File, FileVersion, User, Folder, Operation) with validation
   - ✅ **GCP Integration**: Full Storage service layer with authentication and versioning support

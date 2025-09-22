@@ -1,0 +1,187 @@
+# Test Scenarios Contract
+# Defines the structure and requirements for all test scenarios
+
+testSuites:
+  fileUpload:
+    name: "File Upload Tests"
+    description: "Validate file upload functionality including drag-and-drop and traditional uploads"
+    scenarios:
+      - id: "upload-single-file"
+        title: "Upload single file via drag and drop"
+        priority: "high"
+        browsers: ["chromium", "firefox", "webkit"]
+        preconditions:
+          - "User is on the file browser page"
+          - "No files are currently selected"
+        expectedResult: "File is uploaded successfully and appears in file list"
+
+      - id: "upload-multiple-files"
+        title: "Upload multiple files simultaneously"
+        priority: "high"
+        browsers: ["chromium", "firefox"]
+        preconditions:
+          - "User is on the file browser page"
+        expectedResult: "All files are uploaded and visible in file list"
+
+      - id: "upload-large-file"
+        title: "Upload file larger than 100MB"
+        priority: "medium"
+        browsers: ["chromium"]
+        preconditions:
+          - "User is on the file browser page"
+        expectedResult: "Large file upload completes with progress indication"
+
+  fileDownload:
+    name: "File Download Tests"
+    description: "Validate file download functionality for all supported file types"
+    scenarios:
+      - id: "download-single-file"
+        title: "Download file from file list"
+        priority: "high"
+        browsers: ["chromium", "firefox", "webkit"]
+        preconditions:
+          - "User is on the file browser page"
+          - "At least one file exists in the system"
+        expectedResult: "File downloads successfully to user's download directory"
+
+  versionManagement:
+    name: "Version Management Tests"
+    description: "Validate version creation, viewing, and rollback functionality"
+    scenarios:
+      - id: "create-file-version"
+        title: "Create new version by uploading updated file"
+        priority: "high"
+        browsers: ["chromium", "firefox"]
+        preconditions:
+          - "File already exists in system"
+          - "User is on file browser page"
+        expectedResult: "New version is created and version count increments"
+
+      - id: "view-version-history"
+        title: "View complete version history for a file"
+        priority: "high"
+        browsers: ["chromium", "firefox", "webkit"]
+        preconditions:
+          - "File with multiple versions exists"
+        expectedResult: "All versions are displayed with timestamps and metadata"
+
+      - id: "rollback-to-previous-version"
+        title: "Rollback file to previous version"
+        priority: "medium"
+        browsers: ["chromium", "firefox"]
+        preconditions:
+          - "File with at least 2 versions exists"
+        expectedResult: "File content reverts to selected version, new current version created"
+
+  folderOperations:
+    name: "Folder Management Tests"
+    description: "Validate folder creation, navigation, and organization features"
+    scenarios:
+      - id: "create-folder"
+        title: "Create new folder"
+        priority: "high"
+        browsers: ["chromium", "firefox", "webkit"]
+        preconditions:
+          - "User is on file browser page"
+        expectedResult: "New folder appears in current directory"
+
+      - id: "navigate-folder-structure"
+        title: "Navigate through nested folder structure"
+        priority: "medium"
+        browsers: ["chromium", "firefox"]
+        preconditions:
+          - "Nested folder structure exists"
+        expectedResult: "User can navigate up and down folder hierarchy"
+
+  authentication:
+    name: "Authentication Flow Tests"
+    description: "Validate user authentication and session management"
+    scenarios:
+      - id: "login-valid-credentials"
+        title: "Login with valid credentials"
+        priority: "high"
+        browsers: ["chromium", "firefox", "webkit"]
+        preconditions:
+          - "User is on login page"
+          - "Valid test credentials available"
+        expectedResult: "User is redirected to file browser after successful login"
+
+      - id: "session-timeout"
+        title: "Handle session timeout gracefully"
+        priority: "medium"
+        browsers: ["chromium", "firefox"]
+        preconditions:
+          - "User is logged in"
+          - "Session timeout is configured"
+        expectedResult: "User is redirected to login when session expires"
+
+  errorHandling:
+    name: "Error Handling Tests"
+    description: "Validate error handling for edge cases and failure scenarios"
+    scenarios:
+      - id: "upload-invalid-file-type"
+        title: "Attempt to upload unsupported file type"
+        priority: "medium"
+        browsers: ["chromium", "firefox"]
+        preconditions:
+          - "User is on file browser page"
+          - "Unsupported file type is available"
+        expectedResult: "Clear error message displayed, upload is rejected"
+
+      - id: "network-failure-during-upload"
+        title: "Handle network failure during file upload"
+        priority: "medium"
+        browsers: ["chromium"]
+        preconditions:
+          - "User initiates file upload"
+          - "Network can be simulated to fail"
+        expectedResult: "Upload fails gracefully with retry option"
+
+      - id: "gcp-service-unavailable"
+        title: "Handle GCP service unavailability"
+        priority: "low"
+        browsers: ["chromium"]
+        preconditions:
+          - "GCP service is mocked to be unavailable"
+        expectedResult: "Service error message displayed, application remains stable"
+
+  responsive:
+    name: "Responsive Design Tests"
+    description: "Validate application behavior across different screen sizes"
+    scenarios:
+      - id: "mobile-file-upload"
+        title: "Upload file on mobile viewport"
+        priority: "medium"
+        browsers: ["Mobile Chrome"]
+        preconditions:
+          - "Browser is set to mobile viewport"
+          - "User is on file browser page"
+        expectedResult: "Upload interface is accessible and functional on mobile"
+
+      - id: "tablet-navigation"
+        title: "Navigate application on tablet viewport"
+        priority: "low"
+        browsers: ["chromium"]
+        preconditions:
+          - "Browser is set to tablet viewport"
+        expectedResult: "All navigation elements are accessible and functional"
+
+  performance:
+    name: "Performance Tests"
+    description: "Validate application performance characteristics"
+    scenarios:
+      - id: "large-file-list-rendering"
+        title: "Render file list with 100+ files"
+        priority: "low"
+        browsers: ["chromium"]
+        preconditions:
+          - "Directory contains 100+ files"
+        expectedResult: "File list renders within 3 seconds"
+
+      - id: "concurrent-uploads"
+        title: "Handle multiple concurrent file uploads"
+        priority: "medium"
+        browsers: ["chromium"]
+        preconditions:
+          - "Multiple files ready for upload"
+        expectedResult: "All uploads complete without errors or UI freezing"
