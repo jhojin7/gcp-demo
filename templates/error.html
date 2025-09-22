@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error {{ error_code }} - GCP File Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><a href="{{ url_for('file_browser') }}">GCP File Manager</a></h1>
+            <nav>
+                <a href="{{ url_for('file_browser') }}">Home</a>
+            </nav>
+        </div>
+
+        <div class="error-container">
+            <div class="error-content">
+                <h1 class="error-code">{{ error_code }}</h1>
+                <h2 class="error-title">
+                    {% if error_code == 404 %}
+                        Not Found
+                    {% elif error_code == 403 %}
+                        Access Denied
+                    {% elif error_code == 413 %}
+                        File Too Large
+                    {% elif error_code == 500 %}
+                        Internal Server Error
+                    {% else %}
+                        Error
+                    {% endif %}
+                </h2>
+                <p class="error-message">{{ error_message }}</p>
+
+                <div class="error-actions">
+                    <a href="{{ url_for('file_browser') }}" class="btn btn-primary">
+                        <i class="icon-home"></i> Go Home
+                    </a>
+                    <button onclick="history.back()" class="btn btn-secondary">
+                        <i class="icon-back"></i> Go Back
+                    </button>
+                </div>
+
+                {% if error_code == 404 %}
+                <div class="error-help">
+                    <h4>What you can do:</h4>
+                    <ul>
+                        <li>Check the file name and try again</li>
+                        <li>Browse files from the <a href="{{ url_for('file_browser') }}">home page</a></li>
+                        <li>Upload a new file if needed</li>
+                    </ul>
+                </div>
+                {% elif error_code == 413 %}
+                <div class="error-help">
+                    <h4>File size limit exceeded:</h4>
+                    <ul>
+                        <li>Try compressing your file</li>
+                        <li>Split large files into smaller parts</li>
+                        <li>Contact administrator to increase size limits</li>
+                    </ul>
+                </div>
+                {% elif error_code == 500 %}
+                <div class="error-help">
+                    <h4>Something went wrong:</h4>
+                    <ul>
+                        <li>Try refreshing the page</li>
+                        <li>Check your internet connection</li>
+                        <li>Contact support if the problem persists</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 GCP File Manager</p>
+        </div>
+    </div>
+</body>
+</html>

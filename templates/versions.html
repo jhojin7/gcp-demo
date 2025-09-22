@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Version History - {{ file_info.display_name }} - GCP File Manager{% endblock %}
+
+{% block nav_extra %}
+<li><a href="{{ url_for('file_browser') }}" class="nav-link">
+    <i class="icon-back"></i> Back to Files
+</a></li>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <div class="breadcrumb-content">
+        <i class="icon-history"></i>
+        <a href="{{ url_for('file_browser') }}" class="breadcrumb-link">Files</a>
+        <i class="icon-chevron-right"></i>
+        <span class="breadcrumb-current">{{ file_info.display_name }} - Version History</span>
+    </div>
+</nav>
+{% endblock %}
+
+{% block header_actions %}
+<div class="file-actions">
+    <a href="{{ url_for('download_file', file_id=file_id) }}" class="btn btn-primary">
+        <i class="icon-download"></i> Download Current
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="version-history">
+    <!-- File Information -->
+    <div class="file-summary">
+        <div class="file-summary-content">
+            <div class="file-icon-large">
+                <i class="icon-file-{{ file_info.content_type.split('/')[0] if '/' in file_info.content_type else 'generic' }}"></i>
+            </div>
+
+            <div class="file-details">
+                <h1 class="file-title">{{ file_info.display_name }}</h1>
+                <div class="file-meta">
+                    <span class="file-type">{{ file_info.content_type }}</span>
+                    <span class="file-size">{{ (file_info.storage_info.size / 1024 / 1024) | round(2) if file_info.storage_info else 0 }}MB</span>
+                    <span class="file-path">{{ file_info.virtual_path }}</span>
+                </div>
+                <div class="file-stats">
+                    <span class="version-count">{{ versions | length }} version{{ 's' if versions | length != 1 else '' }}</span>
+                    <span class="created-date">Created {{ file_info.created_at.strftime('%Y-%m-%d %H:%M') if file_info.created_at else 'Unknown' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version Timeline -->
+    {% if versions %}
+    <div class="version-timeline">
+        <h2 class="section-title">
+            <i class="icon-timeline"></i> Version Timeline
+        </h2>
+
+        <div class="timeline">
+            {% for version in versions %}
+            <div class="timeline-item {% if version.is_current %}current{% endif %}">
+                <div class="timeline-marker">
+                    {% if version.is_current %}
+                        <i class="icon-current"></i>
+                    {% elif version.operation_type == 'restore' %}
+                        <i class="icon-restore"></i>
+                    {% elif version.operation_type == 'upload' %}
+                        <i class="icon-upload"></i>
+                    {% else %}
+                        <i class="icon-edit"></i>
+                    {% endif %}
+                </div>
+
+                <div class="timeline-content">
+                    <div class="version-header">
+                        <h3 class="version-title">
+                            Version {{ version.version_id }}
+                            {% if version.is_current %}
+                                <span class="current-badge">Current</span>
+                            {% endif %}
+                        </h3>
+                        <div class="version-time">
+                            <span class="relative-time">{{ version.relative_time }}</span>
+                            <span class="absolute-time">{{ version.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="version-details">
+                        <div class="version-info">
+                            <div class="info-item">
+                                <span class="info-label">Operation:</span>
+                                <span class="info-value operation-{{ version.operation_type }}">
+                                    {{ version.operation_type.title() }}
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Size:</span>
+                                <span class="info-value">{{ (version.size_bytes / 1024 / 1024) | round(2) }}MB</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Created by:</span>
+                                <span class="info-value">{{ version.created_by }}</span>
+                            </div>
+                            {% if version.checksum %}
+                            <div class="info-item">
+                                <span class="info-label">Checksum:</span>
+                                <span class="info-value checksum">{{ version.checksum[:16] }}...</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if version.restore_source_version %}
+                        <div class="restore-info">
+                            <i class="icon-info"></i>
+                            <span>Restored from version {{ version.restore_source_version }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="version-actions">
+                        <a href="{{ url_for('download_file_version', file_id=file_id, version_id=version.version_id) }}"
+                           class="btn btn-sm btn-primary" title="Download this version">
+                            <i class="icon-download"></i> Download
+                        </a>
+
+                        {% if not version.is_current %}
+                        <button class="btn btn-sm btn-secondary"
+                                onclick="showRestoreConfirm('{{ version.version_id }}', '{{ version.created_at.strftime('%Y-%m-%d %H:%M') }}')"
+                                title="Restore to this version">
+                            <i class="icon-restore"></i> Restore
+                        </button>
+                        {% endif %}
+
+                        <button class="btn btn-sm btn-outline"
+                                onclick="showVersionDetails('{{ version.version_id }}')"
+                                title="View details">
+                            <i class="icon-details"></i> Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-content">
+            <i class="icon-history-empty"></i>
+            <h3>No version history available</h3>
+            <p>This file has no version information.</p>
+            <a href="{{ url_for('file_browser') }}" class="btn btn-primary">
+                <i class="icon-back"></i> Back to Files
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div id="restore-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Confirm Version Restore</h2>
+            <button class="modal-close" onclick="hideRestoreModal()">
+                <i class="icon-close"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to restore to this version?</p>
+            <div class="restore-info">
+                <p><strong>File:</strong> {{ file_info.display_name }}</p>
+                <p><strong>Target Version:</strong> <span id="restore-version-id"></span></p>
+                <p><strong>Version Date:</strong> <span id="restore-version-date"></span></p>
+            </div>
+            <div class="warning-text">
+                <i class="icon-warning"></i>
+                <strong>Important:</strong> This will create a new version with the content from the selected version.
+                The current version and all history will be preserved.
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="executeRestore()">
+                <i class="icon-restore"></i> Restore Version
+            </button>
+            <button class="btn btn-secondary" onclick="hideRestoreModal()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Version Details Modal -->
+<div id="details-modal" class="modal" style="display: none;">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2>Version Details</h2>
+            <button class="modal-close" onclick="hideDetailsModal()">
+                <i class="icon-close"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="version-details-content">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading version details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_stats %}
+<span>{{ versions | length }} version{{ 's' if versions | length != 1 else '' }}</span>
+<span>{{ file_info.display_name }}</span>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let restoreVersionId = null;
+
+    function showRestoreConfirm(versionId, versionDate) {
+        restoreVersionId = versionId;
+        document.getElementById('restore-version-id').textContent = versionId;
+        document.getElementById('restore-version-date').textContent = versionDate;
+        document.getElementById('restore-modal').style.display = 'flex';
+    }
+
+    function hideRestoreModal() {
+        document.getElementById('restore-modal').style.display = 'none';
+        restoreVersionId = null;
+    }
+
+    function executeRestore() {
+        if (restoreVersionId) {
+            showLoading();
+
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/restore/{{ file_id }}/${restoreVersionId}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function showVersionDetails(versionId) {
+        document.getElementById('details-modal').style.display = 'flex';
+
+        // Load version details via API
+        fetch(`/api/file/{{ file_id }}/info`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const version = data.file_info.storage_info;
+                    const content = document.getElementById('version-details-content');
+
+                    content.innerHTML = `
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h4>Version Information</h4>
+                                <div class="details-item">
+                                    <span class="details-label">Version ID:</span>
+                                    <span class="details-value">${versionId}</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">File Size:</span>
+                                    <span class="details-value">${formatFileSize(version.size || 0)}</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Content Type:</span>
+                                    <span class="details-value">${version.content_type || 'Unknown'}</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">MD5 Hash:</span>
+                                    <span class="details-value checksum">${version.md5_hash || 'Not available'}</span>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Timestamps</h4>
+                                <div class="details-item">
+                                    <span class="details-label">Created:</span>
+                                    <span class="details-value">${new Date(version.time_created).toLocaleString()}</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Updated:</span>
+                                    <span class="details-value">${version.time_updated ? new Date(version.time_updated).toLocaleString() : 'N/A'}</span>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>Storage Information</h4>
+                                <div class="details-item">
+                                    <span class="details-label">Storage Key:</span>
+                                    <span class="details-value">${version.storage_key}</span>
+                                </div>
+                                <div class="details-item">
+                                    <span class="details-label">Generation:</span>
+                                    <span class="details-value">${version.generation || 'Unknown'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('version-details-content').innerHTML = `
+                        <div class="error-message">
+                            <i class="icon-error"></i>
+                            <p>Failed to load version details: ${data.error}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                document.getElementById('version-details-content').innerHTML = `
+                    <div class="error-message">
+                        <i class="icon-error"></i>
+                        <p>Error loading version details: ${error.message}</p>
+                    </div>
+                `;
+            });
+    }
+
+    function hideDetailsModal() {
+        document.getElementById('details-modal').style.display = 'none';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            hideRestoreModal();
+            hideDetailsModal();
+        }
+    });
+
+    // Close modals when clicking outside
+    document.addEventListener('click', function(event) {
+        const restoreModal = document.getElementById('restore-modal');
+        const detailsModal = document.getElementById('details-modal');
+
+        if (event.target === restoreModal) {
+            hideRestoreModal();
+        }
+        if (event.target === detailsModal) {
+            hideDetailsModal();
+        }
+    });
+
+    // Auto-scroll to current version on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentVersion = document.querySelector('.timeline-item.current');
+        if (currentVersion) {
+            currentVersion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>
+{% endblock %}

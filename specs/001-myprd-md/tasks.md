@@ -74,40 +74,40 @@
 ### Data Models and GCP Service Layer
 - [x] T020 [P] File model class in models/file.py with validation and state transitions
 - [x] T021 [P] FileVersion model class in models/file_version.py with metadata handling
-- [ ] T022 [P] User model class in models/user.py with ownership context
-- [ ] T023 [P] Folder model class in models/folder.py with virtual path logic
-- [ ] T024 [P] Operation model class in models/operation.py with audit tracking
-- [ ] T025 GCP Storage service class in gcp_storage.py with authentication and versioning
-- [ ] T026 File service layer in services/file_service.py for file operations
-- [ ] T027 Version service layer in services/version_service.py for version management
+- [x] T022 [P] User model class in models/user.py with ownership context
+- [x] T023 [P] Folder model class in models/folder.py with virtual path logic
+- [x] T024 [P] Operation model class in models/operation.py with audit tracking
+- [x] T025 GCP Storage service class in gcp_storage.py with authentication and versioning
+- [x] T026 File service layer in services/file_service.py for file operations
+- [x] T027 Version service layer in services/version_service.py for version management
 
 ### Flask Application and Configuration
-- [ ] T028 Main Flask application in app.py with blueprints and routing
-- [ ] T029 Configuration management in config.py for GCP credentials and settings
-- [ ] T030 Error handling middleware and custom error pages
+- [x] T028 Main Flask application in app.py with blueprints and routing
+- [x] T029 Configuration management in config.py for GCP credentials and settings
+- [x] T030 Error handling middleware and custom error pages
 
 ### Web Endpoints Implementation
-- [ ] T031 File browser endpoint GET / in app.py with folder navigation
-- [ ] T032 File upload endpoint POST /upload in app.py with versioning
-- [ ] T033 Current file download GET /download/{file_id} in app.py
-- [ ] T034 Version-specific download GET /download/{file_id}/{version_id} in app.py
-- [ ] T035 File deletion endpoint POST /delete/{file_id} in app.py
-- [ ] T036 Version history page GET /versions/{file_id} in app.py
-- [ ] T037 Version restore endpoint POST /restore/{file_id}/{version_id} in app.py
+- [x] T031 File browser endpoint GET / in app.py with folder navigation
+- [x] T032 File upload endpoint POST /upload in app.py with versioning
+- [x] T033 Current file download GET /download/{file_id} in app.py
+- [x] T034 Version-specific download GET /download/{file_id}/{version_id} in app.py
+- [x] T035 File deletion endpoint POST /delete/{file_id} in app.py
+- [x] T036 Version history page GET /versions/{file_id} in app.py
+- [x] T037 Version restore endpoint POST /restore/{file_id}/{version_id} in app.py
 
 ### API Endpoints Implementation
-- [ ] T038 Files list API GET /api/files in app.py
-- [ ] T039 Version history API GET /api/versions/{file_id} in app.py
-- [ ] T040 File info API GET /api/file/{file_id}/info in app.py
+- [x] T038 Files list API GET /api/files in app.py
+- [x] T039 Version history API GET /api/versions/{file_id} in app.py
+- [x] T040 File info API GET /api/file/{file_id}/info in app.py
 
 ## Phase 3.4: Integration
 
 ### Frontend Templates and Static Files
-- [ ] T041 [P] Base template in templates/base.html with navigation and layout
-- [ ] T042 [P] File browser template in templates/index.html with upload form
-- [ ] T043 [P] Version history template in templates/versions.html with restore buttons
-- [ ] T044 [P] Basic CSS styling in static/style.css for file browser and version views
-- [ ] T045 [P] JavaScript interactions in static/script.js for AJAX operations
+- [x] T041 [P] Base template in templates/base.html with navigation and layout
+- [x] T042 [P] File browser template in templates/index.html with upload form
+- [x] T043 [P] Version history template in templates/versions.html with restore buttons
+- [x] T044 [P] Basic CSS styling in static/style.css for file browser and version views
+- [x] T045 [P] JavaScript interactions in static/script.js for AJAX operations
 
 ### Security and Validation
 - [ ] T046 Input validation and file type restrictions

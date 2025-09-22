@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GCP File Manager{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <a href="{{ url_for('file_browser') }}">
+                        <i class="icon-cloud"></i>
+                        GCP File Manager
+                    </a>
+                </h1>
+
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="{{ url_for('file_browser') }}" class="nav-link {% block nav_home %}{% endblock %}">
+                            <i class="icon-home"></i> Home
+                        </a></li>
+                        {% block nav_extra %}{% endblock %}
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </div>
+        </header>
+
+        <!-- Breadcrumb Navigation -->
+        {% block breadcrumb %}{% endblock %}
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">
+                            <span class="flash-message">{{ message }}</span>
+                            <button class="flash-close" onclick="this.parentElement.remove()">
+                                <i class="icon-close"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 GCP File Manager |
+                   <span class="version">v1.0.0</span> |
+                   <a href="#" onclick="showAbout()">About</a>
+                </p>
+
+                <div class="footer-stats">
+                    {% block footer_stats %}{% endblock %}
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>About GCP File Manager</h2>
+                <button class="modal-close" onclick="hideAbout()">
+                    <i class="icon-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>A versioned file management system built on Google Cloud Platform Storage.</p>
+                <ul>
+                    <li>Upload and manage files with automatic versioning</li>
+                    <li>View complete version history</li>
+                    <li>Restore files to any previous version</li>
+                    <li>Organize files in virtual folders</li>
+                    <li>Secure cloud storage with audit trails</li>
+                </ul>
+                <p><strong>Version:</strong> 1.0.0</p>
+                <p><strong>Built with:</strong> Flask, Google Cloud Storage, Python</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+
+    <script>
+        // Global functions
+        function showAbout() {
+            document.getElementById('about-modal').style.display = 'flex';
+        }
+
+        function hideAbout() {
+            document.getElementById('about-modal').style.display = 'none';
+        }
+
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        // Auto-hide flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash');
+            flashMessages.forEach(function(flash) {
+                setTimeout(function() {
+                    if (flash.parentElement) {
+                        flash.remove();
+                    }
+                }, 5000);
+            });
+        });
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('about-modal');
+            if (event.target === modal) {
+                hideAbout();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Escape key closes modals
+            if (event.key === 'Escape') {
+                hideAbout();
+            }
+        });
+    </script>
+</body>
+</html>
