@@ -1,0 +1,245 @@
+openapi: 3.0.3
+info:
+  title: GCP File Manager API
+  description: Versioned file management with GCP Cloud Storage
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+
+paths:
+  /:
+    get:
+      summary: File browser main page
+      description: Display file browser interface with navigation
+      parameters:
+        - name: path
+          in: query
+          description: Virtual folder path to display
+          schema:
+            type: string
+            default: "/"
+      responses:
+        '200':
+          description: File browser HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /upload:
+    post:
+      summary: Upload file with automatic versioning
+      description: Upload new file or create new version of existing file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                path:
+                  type: string
+                  description: Virtual folder path for file
+                  default: "/"
+              required:
+                - file
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  file_id:
+                    type: string
+                  version_id:
+                    type: string
+        '400':
+          description: Invalid file or upload error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /download/{file_id}:
+    get:
+      summary: Download current file version
+      description: Download the current active version of a file
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: Attachment with original filename
+              schema:
+                type: string
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /download/{file_id}/{version_id}:
+    get:
+      summary: Download specific file version
+      description: Download a specific historical version of a file
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+        - name: version_id
+          in: path
+          required: true
+          description: Specific version identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File version content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              description: Attachment with versioned filename
+              schema:
+                type: string
+        '404':
+          description: File or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /delete/{file_id}:
+    post:
+      summary: Mark file as deleted
+      description: Soft delete file while preserving all version history
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File marked as deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  file_id:
+                    type: string
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /versions/{file_id}:
+    get:
+      summary: Version history page
+      description: Display version history interface for a file
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Version history HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: File not found
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /restore/{file_id}/{version_id}:
+    post:
+      summary: Restore previous version
+      description: Create new current version from historical version
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+        - name: version_id
+          in: path
+          required: true
+          description: Version to restore from
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Version restored successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  new_version_id:
+                    type: string
+                  restored_from:
+                    type: string
+        '404':
+          description: File or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Additional error details
+      required:
+        - error

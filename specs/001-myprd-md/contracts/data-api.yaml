@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: GCP File Manager Data API
+  description: JSON endpoints for file metadata and version information
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development API server
+
+paths:
+  /files:
+    get:
+      summary: List files for current user
+      description: Retrieve JSON list of files with metadata
+      parameters:
+        - name: path
+          in: query
+          description: Virtual folder path to list
+          schema:
+            type: string
+            default: "/"
+        - name: include_deleted
+          in: query
+          description: Include files marked as deleted
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/File'
+                  current_path:
+                    type: string
+                  parent_path:
+                    type: string
+                    nullable: true
+
+  /versions/{file_id}:
+    get:
+      summary: Get version history for file
+      description: Retrieve complete version history with metadata
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Version history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file_info:
+                    $ref: '#/components/schemas/File'
+                  versions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FileVersion'
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /file/{file_id}/info:
+    get:
+      summary: Get file metadata and information
+      description: Retrieve detailed file information without version history
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          description: File storage key identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileDetail'
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    File:
+      type: object
+      properties:
+        file_id:
+          type: string
+          description: Storage key identifier
+        display_name:
+          type: string
+          description: User-friendly filename
+        virtual_path:
+          type: string
+          description: Hierarchical folder path
+        content_type:
+          type: string
+          description: MIME type
+        size_bytes:
+          type: integer
+          description: Current version file size
+        modified_at:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+        owner_id:
+          type: string
+          description: File owner identifier
+        is_deleted:
+          type: boolean
+          description: Soft deletion status
+        version_count:
+          type: integer
+          description: Total number of versions
+      required:
+        - file_id
+        - display_name
+        - virtual_path
+        - content_type
+        - size_bytes
+        - modified_at
+        - owner_id
+        - is_deleted
+
+    FileDetail:
+      allOf:
+        - $ref: '#/components/schemas/File'
+        - type: object
+          properties:
+            created_at:
+              type: string
+              format: date-time
+              description: Initial creation timestamp
+            current_version_id:
+              type: string
+              description: Active version identifier
+            storage_metadata:
+              type: object
+              description: Additional GCP storage metadata
+
+    FileVersion:
+      type: object
+      properties:
+        version_id:
+          type: string
+          description: GCP generation identifier
+        size_bytes:
+          type: integer
+          description: Version file size
+        created_at:
+          type: string
+          format: date-time
+          description: Version creation timestamp
+        created_by:
+          type: string
+          description: User who created version
+        operation_type:
+          type: string
+          enum: [upload, restore, edit]
+          description: Operation that created version
+        is_current:
+          type: boolean
+          description: Whether this is the active version
+        restore_source_version:
+          type: string
+          nullable: true
+          description: Source version for restore operations
+        relative_time:
+          type: string
+          description: Human-readable relative timestamp
+      required:
+        - version_id
+        - size_bytes
+        - created_at
+        - created_by
+        - operation_type
+        - is_current
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+          description: Error occurrence time
+      required:
+        - error
